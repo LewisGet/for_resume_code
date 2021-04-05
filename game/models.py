@@ -26,6 +26,15 @@ class GameCardStatus(models.Model):
     attack = models.IntegerField(default=0)
     cost = models.IntegerField(default=0)
 
+    card_at_str = ["hand", "stage", "graveyard"]
+    card_at = models.IntegerField(default=0)
+
+    def get_card_at_str(self):
+        return self.card_at_str[self.card_at]
+
+    def set_card_at_str(self, value):
+        self.card_at = self.card_at_str.index(value)
+
 
 class GamePlayerStatus(models.Model):
     id = models.IntegerField(primary_key=True, db_index=True)
@@ -38,6 +47,4 @@ class GamePlayerStatus(models.Model):
 class Games(models.Model):
     id = models.IntegerField(primary_key=True, db_index=True)
     players = models.ManyToManyField(GamePlayerStatus, related_name="game_players")
-    hand_cards = models.ManyToManyField(GameCardStatus, related_name="game_hand_cards")
-    stage_cards = models.ManyToManyField(GameCardStatus, related_name="game_stage_cards")
-    graveyard_cards = models.ManyToManyField(GameCardStatus, related_name="game_graveyard_cards")
+    cards = models.ManyToManyField(GameCardStatus, related_name="game_cards")
