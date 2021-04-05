@@ -4,6 +4,10 @@ from game import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+
+    # view game
+    path('<int:id>/', views.game_status, name='game_status'),
+
     # use cards, 使用卡片
     #path('', views.index, name='use_cards'),
     # send cards to graveyard, 丟棄卡片到墓地
