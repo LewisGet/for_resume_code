@@ -9,3 +9,11 @@ coding some code for resume.
 let's build a online card game with django server first.
 
 first time using this framework, it will take a while.
+
+# Getting start
+
+setting up config files
+
+```sh
+cp ember/_settings.py ember/settings.py
+```
