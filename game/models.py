@@ -44,7 +44,7 @@ class GamePlayerStatus(models.Model):
     levels = models.IntegerField(default=0)
 
 
-class Games(models.Model):
+class Game(models.Model):
     id = models.IntegerField(primary_key=True, db_index=True)
     players = models.ManyToManyField(GamePlayerStatus, related_name="game_players")
     cards = models.ManyToManyField(GameCardStatus, related_name="game_cards")
