@@ -1,8 +1,9 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Entity(models.Model):
-    id = models.IntegerField(primary_key=True, db_index=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
     health = models.IntegerField(default=20)
     description = models.TextField(max_length=80)
@@ -19,7 +20,8 @@ class Player(Entity):
 
 
 class GameCardStatus(models.Model):
-    id = models.IntegerField(primary_key=True, db_index=True)
+    id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     health = models.IntegerField(default=0)
@@ -37,7 +39,8 @@ class GameCardStatus(models.Model):
 
 
 class GamePlayerStatus(models.Model):
-    id = models.IntegerField(primary_key=True, db_index=True)
+    id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     health = models.IntegerField(default=0)
     resources = models.IntegerField(default=0)
@@ -45,6 +48,6 @@ class GamePlayerStatus(models.Model):
 
 
 class Game(models.Model):
-    id = models.IntegerField(primary_key=True, db_index=True)
+    id = models.AutoField(primary_key=True)
     players = models.ManyToManyField(GamePlayerStatus, related_name="game_players")
     cards = models.ManyToManyField(GameCardStatus, related_name="game_cards")
