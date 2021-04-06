@@ -46,15 +46,20 @@ def use_card(request, id, card_status_id):
 
         cost_resources = card_status.card.cost + card_status.cost
         card_status.player.resources -= cost_resources
+        card_status.player.exps += cost_resources
 
         if card_status.player.resources < 0:
             raise Exception("not enough resources")
 
         card_status.cost += 1
         card_status.set_card_at_str("stage")
+        card_status.just_deploy = True
+
+        game.bout += 1
 
         card_status.player.save()
         card_status.save()
+        game.save()
     except Exception as e:
         # todo: 500 page
         return HttpResponse(json.dumps({'message': str(e)}), content_type="application/json")

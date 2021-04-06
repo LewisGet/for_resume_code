@@ -27,6 +27,7 @@ class GamePlayerStatus(models.Model):
     health = models.IntegerField(default=0)
     resources = models.IntegerField(default=0)
     levels = models.IntegerField(default=0)
+    exps = models.IntegerField(default=0)
 
 
 class GameCardStatus(models.Model):
@@ -41,6 +42,8 @@ class GameCardStatus(models.Model):
     card_at_str = ["hand", "stage", "graveyard"]
     card_at = models.IntegerField(default=0)
 
+    just_deploy = models.BooleanField(default=True)
+
     def get_card_at_str(self):
         return self.card_at_str[self.card_at]
 
@@ -52,3 +55,4 @@ class Game(models.Model):
     id = models.AutoField(primary_key=True)
     players = models.ManyToManyField(GamePlayerStatus, related_name="game_players")
     cards = models.ManyToManyField(GameCardStatus, related_name="game_cards")
+    bout = models.IntegerField(default=0)
