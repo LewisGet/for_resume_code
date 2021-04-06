@@ -5,6 +5,9 @@ from game import views
 urlpatterns = [
     path('', views.index, name='index'),
 
+    # init game
+    path('init/<str:ids>', views.init_game, name='init_game'),
+
     # view game
     path('<int:id>/', views.game_status, name='game_status'),
 

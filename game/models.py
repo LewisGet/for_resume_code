@@ -10,6 +10,9 @@ class Entity(models.Model):
     # todo: ability callback in here?
     ability_id = models.IntegerField(default=0)
 
+    def __str__(self):
+        return str(self.id) + " - " + self.name
+
 
 class Card(Entity):
     attack = models.IntegerField(default=0)
@@ -28,6 +31,7 @@ class GamePlayerStatus(models.Model):
     resources = models.IntegerField(default=0)
     levels = models.IntegerField(default=0)
     exps = models.IntegerField(default=0)
+    remain_times = models.IntegerField(default=0)
 
 
 class GameCardStatus(models.Model):
@@ -56,3 +60,14 @@ class Game(models.Model):
     players = models.ManyToManyField(GamePlayerStatus, related_name="game_players")
     cards = models.ManyToManyField(GameCardStatus, related_name="game_cards")
     bout = models.IntegerField(default=0)
+    players_order = models.TextField()
+
+
+class Profile(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    default_player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    select_cards = models.ManyToManyField(Card)
+
+    def __str__(self):
+        return self.user.username

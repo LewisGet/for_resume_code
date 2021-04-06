@@ -8,6 +8,40 @@ def index(request):
     return HttpResponse(json.dumps({'message': "working"}), content_type="application/json")
 
 
+def init_game(request, ids):
+    ids = ids.split(",")
+    users = Profile.objects.raw("select * from game_profile where user_id in (%s)" % ",".join([str(int(i)) for i in ids]))
+
+    game = Game.objects.create(
+        #todo: random it
+        players_order=",".join([str(int(i)) for i in ids])
+    )
+
+    for u in users:
+        ps = GamePlayerStatus.objects.create(
+            user_id=u.user,
+            player=u.default_player,
+            health=u.default_player.health,
+            resources=u.default_player.resources
+        )
+
+        game.players.add(ps)
+
+        for card in u.select_cards.all():
+            cs = GameCardStatus.objects.create(
+                user_id=u.user,
+                card=card,
+                player=ps,
+                health=card.health,
+                attack=card.attack,
+                cost=card.cost
+            )
+
+            game.cards.add(cs)
+
+    return HttpResponse(json.dumps({'message': [u.user.username for u in users]}), content_type="application/json")
+
+
 def game_status(request, id):
     try:
         game = Game.objects.get(pk=id)
