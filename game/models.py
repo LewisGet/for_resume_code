@@ -13,17 +13,27 @@ class Entity(models.Model):
 
 class Card(Entity):
     attack = models.IntegerField(default=0)
+    cost = models.IntegerField(default=0)
 
 
 class Player(Entity):
     resources = models.IntegerField(default=0)
 
 
+class GamePlayerStatus(models.Model):
+    id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    health = models.IntegerField(default=0)
+    resources = models.IntegerField(default=0)
+    levels = models.IntegerField(default=0)
+
+
 class GameCardStatus(models.Model):
     id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player = models.ForeignKey(GamePlayerStatus, on_delete=models.CASCADE)
     health = models.IntegerField(default=0)
     attack = models.IntegerField(default=0)
     cost = models.IntegerField(default=0)
@@ -36,15 +46,6 @@ class GameCardStatus(models.Model):
 
     def set_card_at_str(self, value):
         self.card_at = self.card_at_str.index(value)
-
-
-class GamePlayerStatus(models.Model):
-    id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    health = models.IntegerField(default=0)
-    resources = models.IntegerField(default=0)
-    levels = models.IntegerField(default=0)
 
 
 class Game(models.Model):

@@ -32,3 +32,31 @@ def game_status(request, id):
         return_json['users'].append(this_status)
 
     return HttpResponse(json.dumps(return_json), content_type="application/json")
+
+
+def use_card(request, id, card_status_id):
+    # todo: login token
+    # todo: allow turn owner
+    try:
+        game = Game.objects.get(pk=id)
+        card_status = GameCardStatus.objects.get(pk=card_status_id)
+
+        if card_status.get_card_at_str() == "stage":
+            raise Exception("card has been stage")
+
+        cost_resources = card_status.card.cost + card_status.cost
+        card_status.player.resources -= cost_resources
+
+        if card_status.player.resources < 0:
+            raise Exception("not enough resources")
+
+        card_status.cost += 1
+        card_status.set_card_at_str("stage")
+
+        card_status.player.save()
+        card_status.save()
+    except Exception as e:
+        # todo: 500 page
+        return HttpResponse(json.dumps({'message': str(e)}), content_type="application/json")
+
+    return HttpResponse(json.dumps({'message': card_status.get_card_at_str()}), content_type="application/json")
