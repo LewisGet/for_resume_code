@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+# todo: create setup database for testing
+
 class Entity(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
@@ -23,23 +25,22 @@ class Player(Entity):
     resources = models.IntegerField(default=0)
 
 
-class GamePlayerStatus(models.Model):
+class GameStatusEntity(models.Model):
     id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     health = models.IntegerField(default=0)
-    resources = models.IntegerField(default=0)
     levels = models.IntegerField(default=0)
+
+
+class GamePlayerStatus(GameStatusEntity):
+    resources = models.IntegerField(default=0)
     exps = models.IntegerField(default=0)
     remain_times = models.IntegerField(default=0)
 
 
-class GameCardStatus(models.Model):
-    id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+class GameCardStatus(GameStatusEntity):
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
-    player = models.ForeignKey(GamePlayerStatus, on_delete=models.CASCADE)
-    health = models.IntegerField(default=0)
     attack = models.IntegerField(default=0)
     cost = models.IntegerField(default=0)
 
