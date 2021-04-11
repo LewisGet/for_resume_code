@@ -1,7 +1,10 @@
 from django.test import TestCase
+from django.urls import reverse
 from .models import *
 from django.contrib.auth.models import User
 from django.test import Client
+from .views import *
+import json
 
 
 class GameTestCase(TestCase):
@@ -31,5 +34,42 @@ class GameTestCase(TestCase):
 
         self.user2_profile.select_cards.add(*self.card[12:24])
 
-    def test_nothing_yet(self):
-        self.assertTrue(True)
+    def test_init_game(self):
+        # not found error
+        error = False
+
+        try:
+            self.client.get(reverse('init_game', args=['32747']))
+        except Exception as e:
+            error = True
+
+        self.assertTrue(error)
+
+        # ok test
+        error = False
+
+        try:
+            uids = [self.user1.id, self.user2.id]
+            uids_string = ",".join([str(i) for i in uids])
+            r = self.client.get(reverse('init_game', args=[uids_string]))
+        except Exception as e:
+            error = True
+
+        self.assertFalse(error)
+
+        r = json.loads(r.content)
+        game = Game.objects.get(pk=r['id'])
+
+        player_status = [ps for ps in game.players.all()]
+        users = [ps.user.id for ps in player_status]
+
+        self.assertTrue(self.user1.id in users)
+        self.assertTrue(self.user2.id in users)
+
+        first_player_status_id = int(game.players_order.split(",")[0])
+
+        for ps in player_status:
+            if ps.player.id == first_player_status_id:
+                self.assertEquals(ps.remain_times, 1)
+            else:
+                self.assertEquals(ps.remain_times, 0)

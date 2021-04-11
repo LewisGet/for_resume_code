@@ -54,7 +54,7 @@ def init_game(request, ids):
 
             game.cards.add(cs)
 
-    return HttpResponse(json.dumps({'message': [u.user.username for u in users]}), content_type="application/json")
+    return HttpResponse(json.dumps({'id': game.id, 'message': [u.user.username for u in users]}), content_type="application/json")
 
 
 def game_status(request, id):
