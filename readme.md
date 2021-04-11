@@ -17,3 +17,17 @@ setting up config files
 ```sh
 cp ember/_settings.py ember/settings.py
 ```
+
+# Tests
+
+```sh
+python -m coverage run manage.py test
+
+python -m coverage report
+```
+
+### without coverage
+
+```sh
+python manage.py test
+```
