@@ -27,7 +27,7 @@ def init_game(request, ids):
 
         game.players.add(ps)
 
-        for card in u.select_cards.all():
+        for card in u.select_cards.all()[0:12]:
             cs = GameCardStatus.objects.create(
                 user_id=u.user,
                 card=card,
