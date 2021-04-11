@@ -12,3 +12,8 @@ ember/settings.py
 # py and frameworks
 **/__pycache__
 **/migrations
+
+# test
+.coverage
+htmlcov
+htmlcov/*
