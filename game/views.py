@@ -30,7 +30,7 @@ def init_game(request, ids):
 
     for u in users:
         ps = GamePlayerStatus.objects.create(
-            user_id=u.user,
+            user=u.user,
             player=u.default_player,
             health=u.default_player.health,
             resources=u.default_player.resources
@@ -44,7 +44,7 @@ def init_game(request, ids):
 
         for card in u.select_cards.all()[0:12]:
             cs = GameCardStatus.objects.create(
-                user_id=u.user,
+                user=u.user,
                 card=card,
                 player=ps,
                 health=card.health,

@@ -27,7 +27,7 @@ class Player(Entity):
 
 class GameStatusEntity(models.Model):
     id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     health = models.IntegerField(default=0)
     levels = models.IntegerField(default=0)
 
