@@ -1,4 +1,4 @@
-import json
+import json, random
 from django.http import HttpResponse
 from .models import *
 from django.contrib.auth.models import User
@@ -11,7 +11,6 @@ def index(request):
 def init_game(request, ids):
     ids = ids.split(",")
     ids = [int(i) for i in ids]
-    first_player = ids[0]
 
     if 2 > len(ids):
         raise Exception("player need to more than 2")
@@ -21,9 +20,12 @@ def init_game(request, ids):
     if 2 > len(users):
         raise Exception("ids have not found 2 players")
 
+    order_ids = ids[:]
+    random.shuffle(order_ids)
+    first_player = order_ids[0]
+
     game = Game.objects.create(
-        #todo: random it
-        players_order=",".join([str(int(i)) for i in ids])
+        players_order=",".join([str(i) for i in order_ids])
     )
 
     for u in users:
@@ -35,7 +37,8 @@ def init_game(request, ids):
         )
 
         if u.user.id == first_player:
-            ps.remain_times = GamePlayerStatus.levels + 1
+            ps.remain_times = ps.levels + 1
+            ps.save()
 
         game.players.add(ps)
 

@@ -28,18 +28,19 @@ class Player(Entity):
 class GameStatusEntity(models.Model):
     id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
     health = models.IntegerField(default=0)
     levels = models.IntegerField(default=0)
 
 
 class GamePlayerStatus(GameStatusEntity):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
     resources = models.IntegerField(default=0)
     exps = models.IntegerField(default=0)
     remain_times = models.IntegerField(default=0)
 
 
 class GameCardStatus(GameStatusEntity):
+    player = models.ForeignKey(GamePlayerStatus, on_delete=models.CASCADE)
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
     attack = models.IntegerField(default=0)
     cost = models.IntegerField(default=0)
