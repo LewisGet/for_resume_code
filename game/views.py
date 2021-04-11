@@ -10,6 +10,7 @@ def index(request):
 
 def init_game(request, ids):
     ids = ids.split(",")
+    first_player = int(ids[0])
     users = Profile.objects.raw("select * from game_profile where user_id in (%s)" % ",".join([str(int(i)) for i in ids]))
 
     game = Game.objects.create(
@@ -24,6 +25,9 @@ def init_game(request, ids):
             health=u.default_player.health,
             resources=u.default_player.resources
         )
+
+        if u.user.id == first_player:
+            ps.remain_times = GamePlayerStatus.levels + 1
 
         game.players.add(ps)
 
