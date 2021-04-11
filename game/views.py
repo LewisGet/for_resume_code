@@ -10,8 +10,16 @@ def index(request):
 
 def init_game(request, ids):
     ids = ids.split(",")
-    first_player = int(ids[0])
+    ids = [int(i) for i in ids]
+    first_player = ids[0]
+
+    if 2 > len(ids):
+        raise Exception("player need to more than 2")
+
     users = Profile.objects.raw("select * from game_profile where user_id in (%s)" % ",".join([str(int(i)) for i in ids]))
+
+    if 2 > len(users):
+        raise Exception("ids have not found 2 players")
 
     game = Game.objects.create(
         #todo: random it
