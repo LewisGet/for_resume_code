@@ -76,8 +76,6 @@ class GameTestCase(TestCase):
 
         self.assertTrue(error)
 
-
-
     def test_init_ok_game(self):
         # ok test
         users = [ps.user.id for ps in self.player_status]
