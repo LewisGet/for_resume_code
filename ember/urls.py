@@ -15,13 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls import url
-from rest_framework.authtoken.views import ObtainAuthToken
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('game/', include('game.urls')),
-
-    # login token
-    url(r'^login/', ObtainAuthToken.as_view()),
 ]

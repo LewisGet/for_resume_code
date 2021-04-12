@@ -2,6 +2,17 @@ import json, random
 from django.http import HttpResponse
 from .models import *
 from django.contrib.auth.models import User
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+
+
+class ObtainToken(ObtainAuthToken):
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return HttpResponse(json.dumps({'token': token.key}), content_type="application/json")
 
 
 def index(request):
