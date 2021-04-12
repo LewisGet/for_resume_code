@@ -91,3 +91,20 @@ class GameTestCase(TestCase):
                 self.assertEquals(ps.remain_times, 1)
             else:
                 self.assertEquals(ps.remain_times, 0)
+
+    def test_get_game_status_not_found(self):
+        # not found error
+        error = False
+
+        try:
+            self.client.get(reverse('game_status', args=['32747']))
+        except Exception as e:
+            error = True
+
+        self.assertTrue(error)
+
+    def test_get_game_status(self):
+        r = self.client.get(reverse('game_status', args=[self.game.id]))
+        r = json.loads(r.content)
+
+        self.assertEquals(r['id'], self.game.id)

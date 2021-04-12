@@ -58,11 +58,7 @@ def init_game(request, ids):
 
 
 def game_status(request, id):
-    try:
-        game = Game.objects.get(pk=id)
-    except:
-        # todo: 500 page
-        return HttpResponse(json.dumps({'message': 500}), content_type="application/json")
+    game = Game.objects.get(pk=id)
 
     return_json = {
         'id': game.id,
@@ -73,8 +69,8 @@ def game_status(request, id):
 
     for player_status in game.players.all():
         this_status = {
-            'name': player_status.user_id.username,
-            'cards': [card_status.card.name for card_status in game.cards.all() if card_status.user_id == player_status.user_id],
+            'name': player_status.user.username,
+            'cards': [card_status.card.name for card_status in game.cards.all() if card_status.user == player_status.user],
             'player': player_status.player.name
         }
 
