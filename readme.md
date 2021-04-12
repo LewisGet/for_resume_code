@@ -31,3 +31,9 @@ python -m coverage report
 ```sh
 python manage.py test
 ```
+
+### login post test
+
+```sh
+curl http://127.0.0.1:8000/login/ --data "username={username_string}&password={password_string}"
+```
