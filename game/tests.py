@@ -9,32 +9,51 @@ import json
 
 class GameTestCase(TestCase):
     def setUp(self):
+        self.init_users()
+        self.init_cards()
+        self.init_players()
+        self.init_user_profile(self.user1, self.player1, self.card[0:12])
+        self.init_user_profile(self.user2, self.player2, self.card[12:24])
+        self.init_game([self.user1, self.user2])
+
+    def init_users(self):
         self.user1 = User.objects.create(username="user_1", password="password1")
         self.user2 = User.objects.create(username="user_2", password="password2")
 
+    def init_players(self):
         self.player1 = Player.objects.create(name="player 1", description="player description 1")
         self.player2 = Player.objects.create(name="player 2", description="player description 2")
 
+    def init_user_profile(self, user, player, cards):
+        self.user1_profile = Profile.objects.create(
+            user=user,
+            default_player=player
+        )
+
+        self.user1_profile.select_cards.add(*cards)
+
+    def init_cards(self):
         self.card = []
 
         for i in range(24):
             self.card.append(Card.objects.create(name="card %d" % i, description="card description %d" % i))
 
-        self.user1_profile = Profile.objects.create(
-            user=self.user1,
-            default_player=self.player1
-        )
+    def init_game(self, users):
+        error = False
+        try:
+            uids = [u.id for u in users]
+            uids_string = ",".join([str(i) for i in uids])
+            r = self.client.get(reverse('init_game', args=[uids_string]))
+        except Exception as e:
+            error = True
 
-        self.user1_profile.select_cards.add(*self.card[0:12])
+        self.assertFalse(error)
 
-        self.user2_profile = Profile.objects.create(
-            user=self.user2,
-            default_player=self.player2
-        )
+        r = json.loads(r.content)
+        self.game = Game.objects.get(pk=r['id'])
+        self.player_status = [ps for ps in self.game.players.all()]
 
-        self.user2_profile.select_cards.add(*self.card[12:24])
-
-    def test_init_game(self):
+    def test_error_init_game(self):
         # not found error
         error = False
 
@@ -45,31 +64,18 @@ class GameTestCase(TestCase):
 
         self.assertTrue(error)
 
+    def test_init_ok_game(self):
         # ok test
-        error = False
-
-        try:
-            uids = [self.user1.id, self.user2.id]
-            uids_string = ",".join([str(i) for i in uids])
-            r = self.client.get(reverse('init_game', args=[uids_string]))
-        except Exception as e:
-            error = True
-
-        self.assertFalse(error)
-
-        r = json.loads(r.content)
-        game = Game.objects.get(pk=r['id'])
-
-        player_status = [ps for ps in game.players.all()]
-        users = [ps.user.id for ps in player_status]
+        users = [ps.user.id for ps in self.player_status]
 
         self.assertTrue(self.user1.id in users)
         self.assertTrue(self.user2.id in users)
 
-        first_player_status_id = int(game.players_order.split(",")[0])
+        first_player_status_id = int(self.game.players_order.split(",")[0])
 
-        for ps in player_status:
-            if ps.player.id == first_player_status_id:
+        # first attack player status have remain times
+        for ps in self.player_status:
+            if ps.user.id == first_player_status_id:
                 self.assertEquals(ps.remain_times, 1)
             else:
                 self.assertEquals(ps.remain_times, 0)
