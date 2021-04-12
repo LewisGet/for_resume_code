@@ -64,6 +64,20 @@ class GameTestCase(TestCase):
 
         self.assertTrue(error)
 
+        # not found more then 2 user data
+        error = False
+
+        try:
+            uids = [u.id for u in [self.user1, self.user1, self.user1]]
+            uids_string = ",".join([str(i) for i in uids])
+            self.client.get(reverse('init_game', args=[uids_string]))
+        except Exception as e:
+            error = True
+
+        self.assertTrue(error)
+
+
+
     def test_init_ok_game(self):
         # ok test
         users = [ps.user.id for ps in self.player_status]
