@@ -89,6 +89,10 @@ def use_card(request, id, card_status_id):
         if card_status.get_card_at_str() == "stage":
             raise Exception("card has been stage")
 
+        if card_status.player.remain_times <= 0:
+            raise Exception("not your attack round")
+
+        card_status.player.remain_times -= 1
         cost_resources = card_status.card.cost + card_status.cost
         card_status.player.resources -= cost_resources
         card_status.player.exps += cost_resources

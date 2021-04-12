@@ -52,6 +52,7 @@ class GameTestCase(TestCase):
         r = json.loads(r.content)
         self.game = Game.objects.get(pk=r['id'])
         self.player_status = [ps for ps in self.game.players.all()]
+        self.card_status = [cs for cs in self.game.cards.all()]
 
     def test_error_init_game(self):
         # not found error
@@ -108,3 +109,88 @@ class GameTestCase(TestCase):
         r = json.loads(r.content)
 
         self.assertEquals(r['id'], self.game.id)
+
+    def get_card_purview(self, player_status):
+        all_can_use_cards = []
+        all_cant_use_cards = []
+
+        for cs in self.card_status:
+            is_player = cs.player.id == player_status.id
+            is_in_hand = cs.get_card_at_str() == "hand"
+            is_affordable = cs.cost <= player_status.resources
+
+            if False not in [is_player, is_in_hand, is_affordable]:
+                all_can_use_cards.append(cs)
+            else:
+                all_cant_use_cards.append(cs)
+
+        return all_can_use_cards, all_cant_use_cards
+
+    def test_use_card(self):
+        api_name = 'use_card'
+
+        now_attack_player = GamePlayerStatus.objects.filter(remain_times__gte=1)[0]
+        not_use_card_times = now_attack_player.remain_times
+
+        all_can_use_cards, all_cant_use_cards = self.get_card_purview(now_attack_player)
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, all_can_use_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=all_can_use_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "stage")
+        self.assertEquals(used_card.player.remain_times, not_use_card_times - 1)
+
+    def test_use_not_player_card(self):
+        api_name = 'use_card'
+
+        not_attack_player = GamePlayerStatus.objects.filter(remain_times=0)[0]
+        org_remain_times = not_attack_player.remain_times
+
+        not_attack_cards = self.game.cards.filter(player=not_attack_player)
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, not_attack_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=not_attack_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "hand")
+        self.assertEquals(used_card.player.remain_times, org_remain_times)
+
+    def test_use_not_affordable_card(self):
+        api_name = 'use_card'
+
+        now_attack_player = GamePlayerStatus.objects.filter(remain_times__gte=1)[0]
+        not_use_card_times = now_attack_player.remain_times
+
+        all_can_use_cards, all_cant_use_cards = self.get_card_purview(now_attack_player)
+        all_can_use_cards[0].cost = 32747
+        all_can_use_cards[0].save()
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, all_can_use_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=all_can_use_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "hand")
+        self.assertEquals(used_card.player.remain_times, not_use_card_times)
+
+    def test_use_card_has_been_used(self):
+        api_name = 'use_card'
+
+        now_attack_player = GamePlayerStatus.objects.filter(remain_times__gte=1)[0]
+        now_attack_player.remain_times = 3
+        now_attack_player.save()
+
+        not_use_card_times = now_attack_player.remain_times
+
+        all_can_use_cards, all_cant_use_cards = self.get_card_purview(now_attack_player)
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, all_can_use_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=all_can_use_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "stage")
+        self.assertEquals(used_card.player.remain_times, not_use_card_times - 1)
+
+        pre_use_second_times = used_card.player.remain_times
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, all_can_use_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=all_can_use_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "stage")
+        self.assertEquals(used_card.player.remain_times, pre_use_second_times)
