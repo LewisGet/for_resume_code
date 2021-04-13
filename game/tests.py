@@ -17,8 +17,16 @@ class GameTestCase(TestCase):
         self.init_game([self.user1, self.user2])
 
     def init_users(self):
-        self.user1 = User.objects.create(username="user_1", password="password1")
-        self.user2 = User.objects.create(username="user_2", password="password2")
+        self.users = []
+        self.users_raw_pd = []
+
+        for i in range(3):
+            un, pd = "user_" + str(i), "password" + str(i)
+            self.users.append(User.objects.create_user(username=un, password=pd))
+            self.users_raw_pd.append(pd)
+
+        self.user1 = self.users[0]
+        self.user2 = self.users[1]
 
     def init_players(self):
         self.player1 = Player.objects.create(name="player 1", description="player description 1")
