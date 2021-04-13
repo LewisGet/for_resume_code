@@ -3,6 +3,7 @@ from django.urls import reverse
 from .models import *
 from django.contrib.auth.models import User
 from django.test import Client
+from rest_framework.authtoken.models import Token
 from .views import *
 import json
 
@@ -202,3 +203,12 @@ class GameTestCase(TestCase):
 
         self.assertEquals(used_card.get_card_at_str(), "stage")
         self.assertEquals(used_card.player.remain_times, pre_use_second_times)
+
+    def test_login_by_token(self):
+        api_name = 'login'
+        r = self.client.get(reverse(api_name), data={'username': self.users[0].username, 'password': self.users_raw_pd[0]})
+        token = json.loads(r.content)['token']
+
+        db_token = Token.objects.get(user=self.users[0])
+
+        self.assertEquals(db_token.key, token)
