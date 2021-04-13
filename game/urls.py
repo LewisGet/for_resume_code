@@ -12,13 +12,13 @@ urlpatterns = [
     path('token/', views.LoginToken.as_view(), name='token_login'),
 
     # init game
-    path('init/<str:ids>', views.init_game, name='init_game'),
+    path('init/<str:ids>', views.GameView.init_game, name='init_game'),
 
     # view game
-    path('<int:id>/', views.game_status, name='game_status'),
+    path('<int:id>/', views.GameView.game_status, name='game_status'),
 
     # use cards, 使用卡片, 如果使用 card_id 會導致無法帶相同卡牌在排組內
-    path('<int:id>/use_card/<int:card_status_id>', views.use_card, name='use_card'),
+    path('<int:id>/use_card/<int:card_status_id>', views.GameView.use_card, name='use_card'),
 
     # send cards to graveyard, 丟棄卡片到墓地
     #path('', views.index, name='throw_cards'),
