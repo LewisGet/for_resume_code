@@ -8,6 +8,9 @@ urlpatterns = [
     # get user token
     path('login/', views.ObtainToken.as_view(), name='login'),
 
+    # login by token
+    path('token/', views.LoginToken.as_view(), name='token_login'),
+
     # init game
     path('init/<str:ids>', views.init_game, name='init_game'),
 

@@ -212,3 +212,14 @@ class GameTestCase(TestCase):
         db_token = Token.objects.get(user=self.users[0])
 
         self.assertEquals(db_token.key, token)
+
+    def test_login_by_token(self):
+        api_name = 'login'
+        r = self.client.get(reverse(api_name), data={'username': self.users[0].username, 'password': self.users_raw_pd[0]})
+        token = json.loads(r.content)['token']
+
+        api_name = 'token_login'
+        r = self.client.get(reverse(api_name), data={'token': token})
+        uid = json.loads(r.content)['id']
+
+        self.assertEquals(self.users[0].id, uid)

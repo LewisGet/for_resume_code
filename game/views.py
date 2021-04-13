@@ -1,9 +1,11 @@
 import json, random
 from django.http import HttpResponse
 from .models import *
+from .serializers import *
 from django.contrib.auth.models import User
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
 
 
 class ObtainToken(ObtainAuthToken):
@@ -13,6 +15,14 @@ class ObtainToken(ObtainAuthToken):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return HttpResponse(json.dumps({'token': token.key}), content_type="application/json")
+
+
+class LoginToken(APIView):
+    def get(self, request):
+        serializer = LoginSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        return HttpResponse(json.dumps({'id': user.id}), content_type="application/json")
 
 
 def index(request):
