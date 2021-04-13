@@ -204,7 +204,7 @@ class GameTestCase(TestCase):
         self.assertEquals(used_card.get_card_at_str(), "stage")
         self.assertEquals(used_card.player.remain_times, pre_use_second_times)
 
-    def test_login_by_token(self):
+    def test_login_token(self):
         api_name = 'login'
         r = self.client.get(reverse(api_name), data={'username': self.users[0].username, 'password': self.users_raw_pd[0]})
         token = json.loads(r.content)['token']
