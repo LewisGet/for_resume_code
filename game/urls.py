@@ -6,7 +6,7 @@ urlpatterns = [
     path('', views.index, name='index'),
 
     # get user token
-    path('login', views.ObtainToken.as_view(), name='login'),
+    path('login/', views.ObtainToken.as_view(), name='login'),
 
     # init game
     path('init/<str:ids>', views.init_game, name='init_game'),
