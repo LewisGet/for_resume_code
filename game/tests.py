@@ -28,8 +28,7 @@ class GameTestCase(TestCase):
         self.init_user_profile(self.user2, self.player2, self.card[12:24])
         self.init_game([self.user1, self.user2])
         self.init_login_token()
-        self.client = AutoTakeTokenClient()
-        self.client.default_token = self.token[0]
+        self.init_default_login_token_by_first_attacker()
 
     def init_users(self):
         self.users = []
@@ -84,6 +83,12 @@ class GameTestCase(TestCase):
         for i in range(3):
             r = self.client.get(reverse(api_name), data={'username': self.users[i].username, 'password': self.users_raw_pd[i]})
             self.token.append(json.loads(r.content)['token'])
+
+    def init_default_login_token_by_first_attacker(self):
+        self.client = AutoTakeTokenClient()
+        self.now_attacker_ps = GamePlayerStatus.objects.filter(remain_times__gte=1)[0]
+        self.default_token = Token.objects.get(user=self.now_attacker_ps.user).key
+        self.client.default_token = self.default_token
 
     def test_error_init_game(self):
         # not found error
@@ -171,7 +176,7 @@ class GameTestCase(TestCase):
         self.assertEquals(used_card.get_card_at_str(), "stage")
         self.assertEquals(used_card.player.remain_times, not_use_card_times - 1)
 
-    def test_use_not_player_card(self):
+    def test_use_card_when_not_you_time(self):
         api_name = 'use_card'
 
         not_attack_player = GamePlayerStatus.objects.filter(remain_times=0)[0]
@@ -184,6 +189,33 @@ class GameTestCase(TestCase):
 
         self.assertEquals(used_card.get_card_at_str(), "hand")
         self.assertEquals(used_card.player.remain_times, org_remain_times)
+
+    def test_use_not_player_card(self):
+        api_name = 'use_card'
+
+        not_attack_player = None
+
+        # make sure all users have attack times, that test player can send this request
+        for ps in GamePlayerStatus.objects.all():
+            ps.remain_times = 3
+            ps.save()
+
+        for user in User.objects.all():
+            if user != self.now_attacker_ps.user:
+                not_attack_player = GamePlayerStatus.objects.get(user=user)
+                break
+
+        not_player_cards = self.game.cards.filter(player=not_attack_player)
+
+        org_login_player_remain_times = GamePlayerStatus.objects.get(pk=self.now_attacker_ps.id).remain_times
+        org_not_attack_player_remain_times = not_attack_player.remain_times
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, not_player_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=not_player_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "hand")
+        self.assertEquals(used_card.player.remain_times, org_login_player_remain_times)
+        self.assertEquals(used_card.player.remain_times, org_not_attack_player_remain_times)
 
     def test_use_not_affordable_card(self):
         api_name = 'use_card'

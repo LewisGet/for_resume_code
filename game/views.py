@@ -103,12 +103,18 @@ class GameView:
 
     def use_card(request, id, card_status_id):
         # todo: allow turn owner
-        if request.GET.get('token') is None:
+        token = request.GET.get('token')
+
+        if token is None:
             raise Exception("you need to login with token")
 
         try:
+            user = Token.objects.get(key=token).user
             game = Game.objects.get(pk=id)
             card_status = GameCardStatus.objects.get(pk=card_status_id)
+
+            if card_status.user.id != user.id:
+                raise Exception("this not your card")
 
             if card_status.get_card_at_str() == "stage":
                 raise Exception("card has been stage")
