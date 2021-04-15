@@ -277,3 +277,12 @@ class GameTestCase(TestCase):
         uid = json.loads(r.content)['id']
 
         self.assertEquals(self.users[0].id, uid)
+
+    def test_stage_full_use_event_card(self):
+        pass
+
+    def test_stage_full_use_entity_card(self):
+        pass
+
+    def test_one_player_stage_full_other_player_use_entity_card(self):
+        pass
