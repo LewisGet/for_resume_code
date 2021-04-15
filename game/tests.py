@@ -8,6 +8,17 @@ from .views import *
 import json
 
 
+class AutoTakeTokenClient(Client):
+    def get(self, path, data=None, follow=False, secure=False, **extra):
+        if hasattr(self, "default_token"):
+            if data is None:
+                data = {'token': self.default_token}
+            elif 'token' not in data:
+                data['token'] = self.default_token
+
+        return super().get(path, data=data, follow=follow, secure=secure, **extra)
+
+
 class GameTestCase(TestCase):
     def setUp(self):
         self.init_users()
@@ -16,6 +27,9 @@ class GameTestCase(TestCase):
         self.init_user_profile(self.user1, self.player1, self.card[0:12])
         self.init_user_profile(self.user2, self.player2, self.card[12:24])
         self.init_game([self.user1, self.user2])
+        self.init_login_token()
+        self.client = AutoTakeTokenClient()
+        self.client.default_token = self.token[0]
 
     def init_users(self):
         self.users = []
@@ -62,6 +76,14 @@ class GameTestCase(TestCase):
         self.game = Game.objects.get(pk=r['id'])
         self.player_status = [ps for ps in self.game.players.all()]
         self.card_status = [cs for cs in self.game.cards.all()]
+
+    def init_login_token(self):
+        self.token = []
+        api_name = 'login'
+
+        for i in range(3):
+            r = self.client.get(reverse(api_name), data={'username': self.users[i].username, 'password': self.users_raw_pd[i]})
+            self.token.append(json.loads(r.content)['token'])
 
     def test_error_init_game(self):
         # not found error

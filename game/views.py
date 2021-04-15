@@ -102,8 +102,10 @@ class GameView:
 
 
     def use_card(request, id, card_status_id):
-        # todo: login token
         # todo: allow turn owner
+        if request.GET.get('token') is None:
+            raise Exception("you need to login with token")
+
         try:
             game = Game.objects.get(pk=id)
             card_status = GameCardStatus.objects.get(pk=card_status_id)
