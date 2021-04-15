@@ -8,7 +8,7 @@ coding some code for resume.
 
 let's build a online card game with django server first.
 
-first time using this framework, it will take a while.
+this is my first time using this framework, it will take a while.
 
 # Getting start
 
@@ -32,7 +32,7 @@ python -m coverage report
 python manage.py test
 ```
 
-### login post test
+### login test by curl
 
 ```sh
 curl http://127.0.0.1:8000/login/ --data "username={username_string}&password={password_string}"
