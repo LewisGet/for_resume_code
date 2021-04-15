@@ -278,6 +278,11 @@ class GameTestCase(TestCase):
 
         self.assertEquals(self.users[0].id, uid)
 
+    def test_card_type(self):
+        self.assertEquals(self.card[0].get_type_str(), "entity")
+        self.card[0].set_type_str("event")
+        self.assertEquals(self.card[0].get_type_str(), "event")
+
     def test_stage_full_use_event_card(self):
         pass
 

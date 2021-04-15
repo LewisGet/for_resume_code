@@ -20,6 +20,15 @@ class Card(Entity):
     attack = models.IntegerField(default=0)
     cost = models.IntegerField(default=0)
 
+    type_str = ["entity", "event"]
+    type = models.IntegerField(default=0)
+
+    def get_type_str(self):
+        return self.type_str[self.type]
+
+    def set_type_str(self, value):
+        self.type = self.type_str.index(value)
+
 
 class Player(Entity):
     resources = models.IntegerField(default=0)
