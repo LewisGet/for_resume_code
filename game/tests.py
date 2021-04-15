@@ -284,10 +284,70 @@ class GameTestCase(TestCase):
         self.assertEquals(self.card[0].get_type_str(), "event")
 
     def test_stage_full_use_event_card(self):
-        pass
+        api_name = 'use_card'
+        attacker_available_cards, _ = self.get_card_purview(self.now_attacker_ps)
+
+        for i in range(5):
+            cs = attacker_available_cards[i]
+            cs.set_card_at_str("stage")
+            cs.save()
+
+        # update cs
+        self.card_status = [cs for cs in self.game.cards.all()]
+        attacker_available_cards, _ = self.get_card_purview(self.now_attacker_ps)
+
+        event_card = attacker_available_cards[0]
+        event_card.card.set_type_str("event")
+        event_card.card.save()
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, event_card.id]))
+        used_card = GameCardStatus.objects.get(pk=event_card.id)
+
+        self.assertEquals(used_card.get_card_at_str(), "graveyard")
+        self.assertEquals(used_card.player.remain_times, self.now_attacker_ps.remain_times - 1)
 
     def test_stage_full_use_entity_card(self):
-        pass
+        api_name = 'use_card'
+        attacker_available_cards, _ = self.get_card_purview(self.now_attacker_ps)
+
+        for i in range(5):
+            cs = attacker_available_cards[i]
+            cs.set_card_at_str("stage")
+            cs.save()
+
+        # update cs
+        self.card_status = [cs for cs in self.game.cards.all()]
+        attacker_available_cards, _ = self.get_card_purview(self.now_attacker_ps)
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, attacker_available_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=attacker_available_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "hand")
+        self.assertEquals(used_card.player.remain_times, self.now_attacker_ps.remain_times)
 
     def test_one_player_stage_full_other_player_use_entity_card(self):
-        pass
+        api_name = 'use_card'
+
+        not_attack_player = None
+
+        for user in User.objects.all():
+            if user != self.now_attacker_ps.user:
+                not_attack_player = GamePlayerStatus.objects.get(user=user)
+                break
+
+        other_player_available_cards, _ = self.get_card_purview(not_attack_player)
+
+        for i in range(5):
+            cs = other_player_available_cards[i]
+            cs.set_card_at_str("stage")
+            cs.save()
+
+        # update cs
+        self.card_status = [cs for cs in self.game.cards.all()]
+        attacker_available_cards, _ = self.get_card_purview(self.now_attacker_ps)
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, attacker_available_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=attacker_available_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "stage")
+        self.assertEquals(used_card.player.remain_times, self.now_attacker_ps.remain_times - 1)

@@ -120,6 +120,12 @@ class GameView:
             if card_status.player.remain_times <= 0:
                 raise Exception("not your attack round")
 
+            if "event" != card_status.card.get_type_str():
+                your_stage_cards = GameCardStatus.objects.filter(user=user, card_at=card_status.get_card_at_id("stage"))
+
+                if 5 <= len(your_stage_cards):
+                    raise Exception("your stage is full")
+
             card_status.player.remain_times -= 1
             cost_resources = card_status.card.cost + card_status.cost
             card_status.player.resources -= cost_resources
@@ -131,6 +137,10 @@ class GameView:
             card_status.cost += 1
             card_status.set_card_at_str("stage")
             card_status.just_deploy = True
+
+            if "event" == card_status.card.get_type_str():
+                card_status.set_card_at_str("graveyard")
+                card_status.just_deploy = False
 
             game.bout += 1
 

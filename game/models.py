@@ -59,6 +59,9 @@ class GameCardStatus(GameStatusEntity):
 
     just_deploy = models.BooleanField(default=True)
 
+    def get_card_at_id(self, value):
+        return self.card_at_str.index(value)
+
     def get_card_at_str(self):
         return self.card_at_str[self.card_at]
 
