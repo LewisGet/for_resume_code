@@ -108,6 +108,14 @@ class GameTestCase(TestCase):
         self.default_token = Token.objects.get(user=self.now_attacker_ps.user).key
         self.client.default_token = self.default_token
 
+        self.get_attack_ps = None
+        for ps in self.player_status:
+            if ps.id != self.now_attacker_ps.id:
+                self.get_attack_ps = ps
+
+        self.now_attacker_ps.target = self.get_attack_ps
+        self.now_attacker_ps.save()
+
     def init_default_use_card_position_at_3(self):
         self.client._use_card_position = 3
         self.client.default_setup.append(("_use_card_position", "position"))
@@ -574,6 +582,8 @@ class GameTestCase(TestCase):
         cs = css[0]
         cs.health = 1
         cs.attack = 10
+        cs.save()
+
         direct_attack_cs = cs
 
         r = self.client.get(reverse(api_name, args=[self.game.id, cs.id]), {'position': 2})
@@ -583,7 +593,7 @@ class GameTestCase(TestCase):
             dcs = GameCardStatus.objects.get(pk=org_cs.id)
             self.assertEquals(dcs.get_card_at_str(), "graveyard")
 
-        for org_cs in die_cs:
+        for org_cs in not_die_cs:
             dcs = GameCardStatus.objects.get(pk=org_cs.id)
             self.assertEquals(dcs.get_card_at_str(), "stage")
             self.assertNotEquals(dcs.health, org_cs.health)

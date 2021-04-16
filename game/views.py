@@ -126,11 +126,13 @@ class GameView:
 
             self.db_update(card_status, game)
 
-            if card_status.player.remain_times == 0:
-                self.end_round(user, game)
+
         except Exception as e:
             # todo: 500 page
             return HttpResponse(json.dumps({'message': str(e)}), content_type="application/json")
+
+        if card_status.player.remain_times == 0:
+            self.end_round(user, game)
 
         self.post_use_card()
 
@@ -192,6 +194,47 @@ class GameView:
 
     def end_round(self, user, game):
         #todo: card battle
+
+        attack_ps = game.players.get(user=user)
+        target_ps = attack_ps.target
+
+        uids = [attack_ps.user.id, target_ps.user.id]
+        uids_sql = ",".join([str(i) for i in uids])
+        stage_id = GameCardStatus.card_at_str.index("stage")
+        css = GameCardStatus.objects.raw("""
+        select * from game_gamecardstatus
+        left join game_gamestatusentity
+        on game_gamecardstatus.gamestatusentity_ptr_id = game_gamestatusentity.id
+        where
+            user_id in (%s)
+        and
+            card_at = %d order by stage_position
+        """ % (uids_sql, stage_id))
+        attack_stage_cards, target_stage_cards = [], []
+        attack_stage_cards_sort, target_stage_cards_sort = {}, {}
+
+        for cs in css:
+            if cs.user.id == attack_ps.user.id:
+                attack_stage_cards.append(cs)
+                attack_stage_cards_sort[cs.stage_position] = cs
+            else:
+                target_stage_cards.append(cs)
+                target_stage_cards_sort[cs.stage_position] = cs
+
+        for acs in attack_stage_cards:
+            attack_position = acs.stage_position
+            if attack_position in target_stage_cards_sort:
+                bcs = target_stage_cards_sort[attack_position]
+                bcs.health -= acs.attack
+
+                if 0 >= bcs.health:
+                    bcs.set_card_at_str("graveyard")
+
+                bcs.save()
+            else:
+                target_ps.health -= acs.attack
+                target_ps.save()
+
         next_uid = game.next_player(user.id)
         ps = game.players.get(user=next_uid)
         ps.remain_times = ps.levels + 1
