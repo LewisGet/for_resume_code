@@ -444,3 +444,33 @@ class GameTestCase(TestCase):
             pass
 
         self.assertEquals(test_cs.stage_position, 3)
+
+    def test_position_has_been_used(self):
+        api_name = 'use_card'
+        set_position = 2
+        cs_can_use, cs_cant_use = self.get_card_purview(self.now_attacker_ps)
+        self.now_attacker_ps.remain_times = 3
+        self.now_attacker_ps.save()
+
+        cs_can_use[2].card.set_type_str("event")
+        cs_can_use[2].card.save()
+
+        done_r = self.client.get(reverse(api_name, args=[self.game.id, cs_can_use[0].id]), data={'position': set_position})
+        not_r = self.client.get(reverse(api_name, args=[self.game.id, cs_can_use[1].id]), data={'position': set_position})
+        done_r2 = self.client.get(reverse(api_name, args=[self.game.id, cs_can_use[2].id]), data={'position': set_position})
+
+        used_card = GameCardStatus.objects.get(pk=cs_can_use[0].id)
+        not_used_card = GameCardStatus.objects.get(pk=cs_can_use[1].id)
+        used_card_2 = GameCardStatus.objects.get(pk=cs_can_use[2].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "stage")
+        self.assertEquals(used_card.stage_position, set_position)
+        self.assertEquals(used_card.player.remain_times, 1)
+
+        self.assertEquals(not_used_card.get_card_at_str(), "hand")
+        self.assertEquals(not_used_card.stage_position, 0)
+        self.assertEquals(not_used_card.player.remain_times, 1)
+
+        self.assertEquals(used_card_2.get_card_at_str(), "graveyard")
+        self.assertEquals(used_card_2.stage_position, set_position)
+        self.assertEquals(used_card_2.player.remain_times, 1)

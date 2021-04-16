@@ -101,6 +101,8 @@ class GameView:
 
     def use_card(request, id, card_status_id):
         # todo: allow turn owner
+        # todo: split event card and entity card function
+        # todo: split pay resources function
         token = request.GET.get('token')
         position = request.GET.get('position')
 
@@ -109,6 +111,8 @@ class GameView:
 
         if position in range(5):
             raise Exception("position must in 0~4")
+
+        position = int(position)
 
         try:
             user = Token.objects.get(key=token).user
@@ -130,6 +134,10 @@ class GameView:
                 if 5 <= len(your_stage_cards):
                     raise Exception("your stage is full")
 
+                for cs in your_stage_cards:
+                    if position == cs.stage_position:
+                        raise Exception("position has been used")
+
             card_status.player.remain_times -= 1
             cost_resources = card_status.card.cost + card_status.cost
             card_status.player.resources -= cost_resources
@@ -140,6 +148,7 @@ class GameView:
 
             card_status.cost += 1
             card_status.set_card_at_str("stage")
+            card_status.set_stage_position(position)
             card_status.just_deploy = True
 
             if "event" == card_status.card.get_type_str():
