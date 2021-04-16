@@ -86,6 +86,19 @@ class Game(models.Model):
     bout = models.IntegerField(default=0)
     players_order = models.TextField()
 
+    def get_players_order(self):
+        return [int(i) for i in self.players_order.split(",")]
+
+    def set_players_order(self, value):
+        self.players_order = ",".join(value)
+
+    def next_player(self, uid):
+        orders = self.get_players_order()
+        start_index = orders.index(uid) + 1
+        if start_index == len(orders):
+            start_index = 0
+
+        return orders[start_index]
 
 class Profile(models.Model):
     id = models.AutoField(primary_key=True)

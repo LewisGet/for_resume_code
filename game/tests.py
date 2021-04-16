@@ -474,3 +474,30 @@ class GameTestCase(TestCase):
         self.assertEquals(used_card_2.get_card_at_str(), "graveyard")
         self.assertEquals(used_card_2.stage_position, set_position)
         self.assertEquals(used_card_2.player.remain_times, 1)
+
+    def test_use_card_end_round(self):
+        api_name = 'use_card'
+
+        self.now_attacker_ps.remain_times = 1
+        self.now_attacker_ps.save()
+
+        all_can_use_cards, all_cant_use_cards = self.get_card_purview(self.now_attacker_ps)
+        r = self.client.get(reverse(api_name, args=[self.game.id, all_can_use_cards[0].id]))
+        used_card = GameCardStatus.objects.get(pk=all_can_use_cards[0].id)
+
+        self.assertEquals(used_card.get_card_at_str(), "stage")
+        self.assertEquals(used_card.player.remain_times, 0)
+
+        orders = self.game.get_players_order()
+
+        last_attacker_order = orders.index(self.now_attacker_ps.user.id)
+
+        start_index = last_attacker_order + 1
+        if start_index == len(orders):
+            start_index = 0
+
+        new_attacker_id = orders[start_index]
+        new_attacker = GamePlayerStatus.objects.get(user=new_attacker_id)
+        self.now_attacker_ps = new_attacker
+
+        self.assertEquals(new_attacker.remain_times, new_attacker.levels + 1)

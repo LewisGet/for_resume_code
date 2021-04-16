@@ -125,6 +125,9 @@ class GameView:
             game.bout += 1
 
             self.db_update(card_status, game)
+
+            if card_status.player.remain_times == 0:
+                self.end_round(user, game)
         except Exception as e:
             # todo: 500 page
             return HttpResponse(json.dumps({'message': str(e)}), content_type="application/json")
@@ -186,3 +189,10 @@ class GameView:
         cs.player.save()
         cs.save()
         game.save()
+
+    def end_round(self, user, game):
+        #todo: card battle
+        next_uid = game.next_player(user.id)
+        ps = game.players.get(user=next_uid)
+        ps.remain_times = ps.levels + 1
+        ps.save()
