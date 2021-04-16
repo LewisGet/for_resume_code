@@ -501,3 +501,91 @@ class GameTestCase(TestCase):
         self.now_attacker_ps = new_attacker
 
         self.assertEquals(new_attacker.remain_times, new_attacker.levels + 1)
+
+    def test_battle(self):
+        api_name = 'use_card'
+        attack_ps = self.now_attacker_ps
+        get_attack_ps = None
+        for ps in self.player_status:
+            if ps.id != attack_ps.id:
+                get_attack_ps = ps
+
+        attack_ps.remain_times = 1
+        attack_ps.target = get_attack_ps
+        attack_ps.save()
+        get_attack_ps.health = 30
+        get_attack_ps.save()
+
+        css, _ = self.get_card_purview(get_attack_ps)
+        die_cs = []
+        not_die_cs = []
+
+        # set some card to get attack, and miss a position to be attack player direct
+        position = 0
+        cs = css[position]
+        cs.set_card_at_str("stage")
+        cs.health = 30
+        cs.set_stage_position(position)
+        cs.save()
+        not_die_cs.append(cs)
+
+        position = 1
+        cs = css[position]
+        cs.set_card_at_str("stage")
+        cs.health = 10
+        cs.set_stage_position(position)
+        cs.save()
+        die_cs.append(cs)
+
+        position = 3
+        cs = css[position]
+        cs.set_card_at_str("stage")
+        cs.health = 1
+        cs.set_stage_position(position)
+        cs.save()
+        die_cs.append(cs)
+
+        css, _ = self.get_card_purview(attack_ps)
+        position = 0
+        cs = css[position]
+        cs.set_card_at_str("stage")
+        cs.health = 30
+        cs.attack = 10
+        cs.set_stage_position(position)
+        cs.save()
+
+        position = 1
+        cs = css[position]
+        cs.set_card_at_str("stage")
+        cs.health = 10
+        cs.attack = 10
+        cs.set_stage_position(position)
+        cs.save()
+
+        position = 3
+        cs = css[position]
+        cs.set_card_at_str("stage")
+        cs.health = 1
+        cs.attack = 10
+        cs.set_stage_position(position)
+        cs.save()
+
+        css, _ = self.get_card_purview(attack_ps)
+        cs = css[0]
+        cs.health = 1
+        cs.attack = 10
+        direct_attack_cs = cs
+
+        r = self.client.get(reverse(api_name, args=[self.game.id, cs.id]), {'position': 2})
+        get_attack_ps_update = GamePlayerStatus.objects.get(pk=attack_ps.target)
+
+        for org_cs in die_cs:
+            dcs = GameCardStatus.objects.get(pk=org_cs.id)
+            self.assertEquals(dcs.get_card_at_str(), "graveyard")
+
+        for org_cs in die_cs:
+            dcs = GameCardStatus.objects.get(pk=org_cs.id)
+            self.assertEquals(dcs.get_card_at_str(), "stage")
+            self.assertNotEquals(dcs.health, org_cs.health)
+
+        self.assertEquals(get_attack_ps.health - direct_attack_cs.attack, get_attack_ps_update.health)
