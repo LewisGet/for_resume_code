@@ -9,7 +9,24 @@ import json
 
 
 class AutoTakeTokenClient(Client):
+    default_setup = []
+
+    def check_default_setup(self, data, default_index, data_index):
+        if hasattr(self, default_index):
+            if data is None:
+                data = {data_index: eval("self." + default_index)}
+            elif data_index not in data:
+                data[data_index] = eval("self." + default_index)
+
+            return data
+
+        return data
+
     def get(self, path, data=None, follow=False, secure=False, **extra):
+        for i in self.default_setup:
+            default_index, data_index = i
+            data = self.check_default_setup(data, default_index, data_index)
+
         if hasattr(self, "default_token"):
             if data is None:
                 data = {'token': self.default_token}
@@ -29,6 +46,7 @@ class GameTestCase(TestCase):
         self.init_game([self.user1, self.user2])
         self.init_login_token()
         self.init_default_login_token_by_first_attacker()
+        self.init_default_use_card_position_at_3()
 
     def init_users(self):
         self.users = []
@@ -89,6 +107,10 @@ class GameTestCase(TestCase):
         self.now_attacker_ps = GamePlayerStatus.objects.filter(remain_times__gte=1)[0]
         self.default_token = Token.objects.get(user=self.now_attacker_ps.user).key
         self.client.default_token = self.default_token
+
+    def init_default_use_card_position_at_3(self):
+        self.client._use_card_position = 3
+        self.client.default_setup.append(("_use_card_position", "position"))
 
     def test_error_init_game(self):
         # not found error
@@ -351,3 +373,74 @@ class GameTestCase(TestCase):
 
         self.assertEquals(used_card.get_card_at_str(), "stage")
         self.assertEquals(used_card.player.remain_times, self.now_attacker_ps.remain_times - 1)
+
+    def test_card_stage_position(self):
+        errors = False
+        try:
+            self.card_status[0].set_stage_position(30)
+        except Exception as e:
+            errors = True
+
+        self.assertTrue(errors)
+        self.assertEquals(self.card_status[0].stage_position, 0)
+
+        errors = False
+
+        self.card_status[0].set_card_at_str("hand")
+        try:
+            self.card_status[0].set_stage_position(3)
+        except Exception as e:
+            errors = True
+
+        self.assertTrue(errors)
+        self.assertEquals(self.card_status[0].stage_position, 0)
+
+        errors = False
+
+        self.card_status[0].set_card_at_str("graveyard")
+        try:
+            self.card_status[0].set_stage_position(3)
+        except Exception as e:
+            errors = True
+
+        self.assertTrue(errors)
+        self.assertEquals(self.card_status[0].stage_position, 0)
+
+        errors = False
+
+        self.card_status[0].set_card_at_str("stage")
+        try:
+            self.card_status[0].set_stage_position(3)
+        except Exception as e:
+            errors = True
+
+        self.assertFalse(errors)
+        self.assertEquals(self.card_status[0].stage_position, 3)
+
+    def test_event_card_stage_position(self):
+        test_cs = self.card_status[0]
+        test_cs.card.set_type_str("event")
+
+        try:
+            test_cs.set_card_at_str("hand")
+            test_cs.set_stage_position(3)
+        except Exception as e:
+            pass
+
+        self.assertEquals(test_cs.stage_position, 0)
+
+        try:
+            test_cs.set_card_at_str("graveyard")
+            test_cs.set_stage_position(3)
+        except Exception as e:
+            pass
+
+        self.assertEquals(test_cs.stage_position, 0)
+
+        try:
+            test_cs.set_card_at_str("stage")
+            test_cs.set_stage_position(3)
+        except Exception as e:
+            pass
+
+        self.assertEquals(test_cs.stage_position, 3)

@@ -102,9 +102,13 @@ class GameView:
     def use_card(request, id, card_status_id):
         # todo: allow turn owner
         token = request.GET.get('token')
+        position = request.GET.get('position')
 
         if token is None:
             raise Exception("you need to login with token")
+
+        if position in range(5):
+            raise Exception("position must in 0~4")
 
         try:
             user = Token.objects.get(key=token).user

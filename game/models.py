@@ -58,6 +58,7 @@ class GameCardStatus(GameStatusEntity):
     card_at = models.IntegerField(default=0)
 
     just_deploy = models.BooleanField(default=True)
+    stage_position = models.IntegerField(default=0)
 
     def get_card_at_id(self, value):
         return self.card_at_str.index(value)
@@ -67,6 +68,15 @@ class GameCardStatus(GameStatusEntity):
 
     def set_card_at_str(self, value):
         self.card_at = self.card_at_str.index(value)
+
+    def set_stage_position(self, value):
+        if "stage" != self.get_card_at_str():
+            raise Exception("card can\'t set position when its not in stage")
+
+        if 5 < value:
+            raise Exception("card position only have 5 places")
+
+        self.stage_position = value
 
 
 class Game(models.Model):
