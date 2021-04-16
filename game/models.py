@@ -46,6 +46,7 @@ class GamePlayerStatus(GameStatusEntity):
     resources = models.IntegerField(default=0)
     exps = models.IntegerField(default=0)
     remain_times = models.IntegerField(default=0)
+    target = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
 
 
 class GameCardStatus(GameStatusEntity):
