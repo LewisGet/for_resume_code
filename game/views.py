@@ -30,7 +30,7 @@ def index(request):
 
 
 class GameView:
-    def init_game(request, ids):
+    def init_game(self, request, ids):
         ids = ids.split(",")
         ids = [int(i) for i in ids]
 
@@ -78,7 +78,7 @@ class GameView:
 
         return HttpResponse(json.dumps({'id': game.id, 'message': [u.user.username for u in users]}), content_type="application/json")
 
-    def game_status(request, id):
+    def game_status(self, request, id):
         game = Game.objects.get(pk=id)
 
         return_json = {
@@ -99,7 +99,7 @@ class GameView:
 
         return HttpResponse(json.dumps(return_json), content_type="application/json")
 
-    def use_card(request, id, card_status_id):
+    def use_card(self, request, id, card_status_id):
         # todo: allow turn owner
         # todo: split event card and entity card function
         # todo: split pay resources function
