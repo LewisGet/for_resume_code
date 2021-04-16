@@ -125,8 +125,6 @@ class GameView:
             game.bout += 1
 
             self.db_update(card_status, game)
-
-
         except Exception as e:
             # todo: 500 page
             return HttpResponse(json.dumps({'message': str(e)}), content_type="application/json")
