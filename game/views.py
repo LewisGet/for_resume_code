@@ -103,6 +103,7 @@ class GameView:
         # todo: allow turn owner
         # todo: split event card and entity card function
         # todo: split pay resources function
+        self.pre_use_card()
         token = request.GET.get('token')
         position = request.GET.get('position')
 
@@ -164,4 +165,12 @@ class GameView:
             # todo: 500 page
             return HttpResponse(json.dumps({'message': str(e)}), content_type="application/json")
 
+        self.post_use_card()
+
         return HttpResponse(json.dumps({'message': card_status.get_card_at_str()}), content_type="application/json")
+
+    def pre_use_card(self):
+        pass
+
+    def post_use_card(self):
+        pass
