@@ -32,6 +32,12 @@ python -m coverage report
 python manage.py test
 ```
 
+### test one function
+
+```sh
+python manage.py test game.tests.GameTestCase.test_battle
+```
+
 ### login test by curl
 
 ```sh
