@@ -101,6 +101,7 @@ class Game(models.Model):
 
         return orders[start_index]
 
+
 class Profile(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
