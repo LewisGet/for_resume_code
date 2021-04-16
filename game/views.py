@@ -164,7 +164,7 @@ class GameView:
 
     def pay_resources(self, cs):
         cs.player.remain_times -= 1
-        cost_resources = cs.card.cost + cs.cost
+        cost_resources = cs.cost
         cs.player.resources -= cost_resources
         cs.player.exps += cost_resources
         cs.cost += 1
