@@ -599,3 +599,38 @@ class GameTestCase(TestCase):
             self.assertNotEquals(dcs.health, org_cs.health)
 
         self.assertEquals(get_attack_ps.health - direct_attack_cs.attack, get_attack_ps_update.health)
+
+    def test_optimistic_locking_of_game_player_status(self):
+        #only for test db locking
+        import threading
+        from datetime import datetime
+        import time
+
+        ps = self.player_status[0]
+
+        start_time = datetime.now().timestamp() + 0.1
+        threads = []
+        thread_returns = []
+        thread_error_returns = []
+
+        def execute(ps, start_time, thread_returns, thread_error_returns):
+            now = datetime.now().timestamp()
+            if start_time > now:
+                time.sleep(0.0001)
+
+            try:
+                ps.resources = ps.resources + 1
+                thread_returns.append(now)
+                ps.save()
+            except Exception as e:
+                thread_error_returns.append(e)
+
+        for i in range(5):
+            threads.append(threading.Thread(target=execute, args=(ps, start_time, thread_returns, thread_error_returns)))
+            threads[i].start()
+
+        for i in range(5):
+            threads[i].join()
+
+        self.assertEquals(ps.resources, 5)
+        self.assertEquals(str(thread_error_returns[0]), "database table is locked")
