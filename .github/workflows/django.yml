@@ -25,10 +25,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        mv ember emberSorces
+        mv ember emberSources
         python -m django startproject ember
-        cp emberSorces/* ember/ember
-        mv emberSorces/_settings.py ember/ember/settings.py
+        cp emberSources/* ember/ember
+        mv emberSources/_settings.py ember/ember/settings.py
         mkdir ember/game
         cp game/* ember/game
     - name: Debug Files
