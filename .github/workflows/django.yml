@@ -1,0 +1,43 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        mv ember emberSorces
+        python -m django startproject ember
+        cp emberSorces/* ember/ember
+        mv emberSorces/_settings.py ember/ember/settings.py
+        mkdir ember/game
+        cp game/* ember/game
+    - name: Debug Files
+      run: |
+        ls .
+        ls ember
+        ls ember/ember
+        ls ember/game
+    - name: Run Tests
+      run: |
+        cd ember
+        python manage.py test
